@@ -1,0 +1,186 @@
+========================================================
+  GmailAi BD — ПЛАН ПРОЕКТА
+  Дата: 2026-04-13
+========================================================
+
+НАЗНАЧЕНИЕ
+----------
+Умная база данных для хранения и управления Gmail-аккаунтами.
+ИИ-агент анализирует сырой неструктурированный текст и автоматически
+заносит аккаунты в SQLite базу данных.
+
+СТЭК
+----
+- Backend:  Python 3.10+ / Flask 3.x
+- БД:       SQLite (встроенная, без внешних серверов)
+- Frontend: HTML5 + Vanilla JS + CSS3 (без зависимостей NPM)
+- ИИ:       Внешний API (настраивается пользователем: ключ, endpoint, модель)
+- Запуск:   python gmailai.py
+
+СТРУКТУРА ФАЙЛОВ
+----------------
+gmailai.py              — точка входа, запуск Flask-сервера
+app/
+  __init__.py           — фабрика Flask приложения, регистрация маршрутов
+  database.py           — инициализация SQLite, модели таблиц
+  agent.py              — логика ИИ-агента: парсинг, вызов API, выполнение команд
+  templates/
+    index.html          — единая SPA-страница (всё UI)
+  static/
+    style.css           — тёмная тема (тёмно-синий + фиолетовый)
+    app.js              — главный JS: таблица, фильтры, копирование
+    chat.js             — логика чата с агентом
+requirements.txt        — зависимости Python
+plan.txt                — этот файл
+
+СТРУКТУРА БАЗЫ ДАННЫХ (SQLite)
+-------------------------------
+Таблица: accounts
+  id              INTEGER PRIMARY KEY AUTOINCREMENT
+  email           TEXT NOT NULL
+  password        TEXT NOT NULL
+  status          TEXT DEFAULT 'active'   -- active / sold / appeal / banned / unknown
+  two_factor_code TEXT                    -- TOTP код (если есть)
+  recovery_email  TEXT                    -- резервная почта
+  recovery_phone  TEXT                    -- резервный телефон
+  notes           TEXT                    -- произвольные заметки
+  tags            TEXT                    -- JSON-массив тегов
+  created_at      DATETIME DEFAULT CURRENT_TIMESTAMP
+  updated_at      DATETIME DEFAULT CURRENT_TIMESTAMP
+
+Таблица: chat_history
+  id              INTEGER PRIMARY KEY AUTOINCREMENT
+  role            TEXT                    -- 'user' или 'assistant'
+  content         TEXT                    -- текст сообщения
+  actions_count   INTEGER DEFAULT 0       -- кол-во выполненных действий
+  created_at      DATETIME DEFAULT CURRENT_TIMESTAMP
+
+Таблица: settings
+  id              INTEGER PRIMARY KEY DEFAULT 1
+  api_key         TEXT DEFAULT ''
+  api_endpoint    TEXT DEFAULT 'https://api.openai.com/v1/chat/completions'
+  ai_model        TEXT DEFAULT 'gpt-4o-mini'
+  system_prompt   TEXT
+
+Таблица: activity_log
+  id              INTEGER PRIMARY KEY AUTOINCREMENT
+  type            TEXT                    -- ADD / UPDATE / DELETE / PARSE
+  description     TEXT
+  created_at      DATETIME DEFAULT CURRENT_TIMESTAMP
+
+ЛОГИКА ИИ-АГЕНТА (МНОГОЭТАПНОСТЬ)
+------------------------------------
+Шаг 1 — Пользователь кидает сырой текст в чат
+Шаг 2 — Backend отправляет текст ИИ с системным промптом
+Шаг 3 — ИИ анализирует текст и возвращает JSON с командами:
+
+  {
+    "message": "Нашёл 3 аккаунта...",
+    "actions": [
+      {
+        "type": "ADD_ACCOUNT",
+        "data": {
+          "email": "user@gmail.com",
+          "password": "Pass123",
+          "status": "active",
+          "two_factor_code": "ABC123",
+          "recovery_email": null,
+          "notes": "куплен 10.01.2025"
+        }
+      },
+      {
+        "type": "UPDATE_ACCOUNT",
+        "id": 5,
+        "data": { "status": "sold" }
+      },
+      {
+        "type": "DELETE_ACCOUNT",
+        "id": 7
+      },
+      {
+        "type": "QUERY",
+        "message": "Нашёл 15 аккаунтов со статусом 'appeal'"
+      }
+    ]
+  }
+
+Шаг 4 — Backend выполняет каждое действие в SQLite
+Шаг 5 — Frontend реактивно обновляет таблицу (WebSocket или polling)
+Шаг 6 — Ответ ИИ показывается в чате с иконками действий
+
+ФОРМАТЫ ПАРСИНГА (примеры входных данных)
+------------------------------------------
+Формат 1: email:password
+  test@gmail.com:MyPass123
+
+Формат 2: email|password
+  test@gmail.com|MyPass123
+
+Формат 3: Слитный (email имя совпадает с частью пароля)
+  Tupa83_9 → email: tupa83@gmail.com, password: Tupa83_9
+
+Формат 4: Многострочный с метками
+  Почта: user@gmail.com
+  Пароль: qwerty123
+  2FA: JBSWY3DPEHPK3PXP
+  Статус: продан
+
+Статусы (распознаются по ключевым словам):
+  active  → ok, ок, active, рабочий, работает, good
+  sold    → продан, sold, продали, куплен
+  appeal  → аппеляция, appeal, апелляция, заблок
+  banned  → бан, banned, забанен, dead
+
+ДИЗАЙН (UI/UX)
+--------------
+Цветовая схема:
+  --bg-primary:    #0a0f1e     (почти чёрный с синим)
+  --bg-secondary:  #111827     (тёмно-серый)
+  --bg-card:       #1a2035     (тёмно-синий карточки)
+  --accent-blue:   #2d5be3     (электрик синий)
+  --accent-violet: #7c3aed     (фиолетовый)
+  --accent-glow:   #4f8ef7     (голубое свечение)
+  --text-primary:  #e2e8f0     (светло-серый)
+  --text-muted:    #64748b     (приглушённый)
+  --border:        #1e3a5f     (тёмно-синяя граница)
+
+  Focus:   box-shadow: 0 0 0 2px rgba(77, 142, 247, 0.4) — вместо outline
+  Иконки:  SVG-иконки (нет эмодзи)
+  Шрифт:   Inter (Google Fonts) + Jetbrains Mono для данных аккаунтов
+
+Страницы (SPA с вкладками):
+  1. Dashboard    — статистика, последние добавления
+  2. База данных  — таблица со всеми аккаунтами
+  3. ИИ-агент     — чат с агентом (плавающая панель)
+  4. Настройки    — API ключ, модель, системный промпт
+
+API ENDPOINTS
+--------------
+GET  /api/accounts           — список с фильтрами
+POST /api/accounts           — создать
+PATCH /api/accounts/:id      — обновить
+DELETE /api/accounts/:id     — удалить
+POST /api/accounts/bulk      — массовое создание
+POST /api/accounts/bulk-delete — массовое удаление
+
+POST /api/chat               — отправить сообщение агенту
+GET  /api/chat/history       — история чата
+DELETE /api/chat/history     — очистить историю
+
+GET  /api/settings           — получить настройки
+PUT  /api/settings           — обновить настройки
+
+GET  /api/dashboard/stats    — статистика
+GET  /api/dashboard/recent   — последние действия
+GET  /api/dashboard/status-breakdown — разбивка по статусам
+
+ЗАПУСК
+------
+pip install -r requirements.txt
+python gmailai.py
+
+На Termux:
+pkg install python
+pip install -r requirements.txt
+python gmailai.py
+# → http://localhost:5000
