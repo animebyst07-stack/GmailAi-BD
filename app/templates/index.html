@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GmailAi BD</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+<!-- ===== 3D WAVE GRID BACKGROUND ===== -->
+<canvas id="grid-canvas"></canvas>
+
+<!-- ===== SIDEBAR ===== -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+      <rect width="28" height="28" rx="6" fill="url(#logoGrad)"/>
+      <path d="M7 10L14 15.5L21 10" stroke="#000" stroke-width="1.8" stroke-linecap="round"/>
+      <path d="M7 10V20H21V10" stroke="#000" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      <defs>
+        <linearGradient id="logoGrad" x1="0" y1="0" x2="28" y2="28">
+          <stop offset="0%" stop-color="#39ff14"/>
+          <stop offset="50%" stop-color="#00c853"/>
+          <stop offset="100%" stop-color="#00e5ff"/>
+        </linearGradient>
+      </defs>
+    </svg>
+    <span class="logo-text">GmailAi BD</span>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a href="#" class="nav-item active" data-page="dashboard" onclick="showPage('dashboard')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+        <rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>
+      </svg>
+      <span>Дашборд</span>
+    </a>
+    <a href="#" class="nav-item" data-page="database" onclick="showPage('database')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <ellipse cx="12" cy="5" rx="9" ry="3"/>
+        <path d="M3 5v4c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+        <path d="M3 9v4c0 1.66 4 3 9 3s9-1.34 9-3V9"/>
+        <path d="M3 13v4c0 1.66 4 3 9 3s9-1.34 9-3v-4"/>
+      </svg>
+      <span>База данных</span>
+      <span class="nav-badge" id="nav-total">0</span>
+    </a>
+    <a href="#" class="nav-item" data-page="agent" onclick="showPage('agent')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2a8 8 0 0 1 8 8v1h1a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-1a8 8 0 0 1-16 0H3a1 1 0 0 1-1-1v-2a1 1 0 0 1 1-1h1v-1a8 8 0 0 1 8-8z"/>
+        <circle cx="9" cy="11" r="1" fill="currentColor"/><circle cx="15" cy="11" r="1" fill="currentColor"/>
+      </svg>
+      <span>ИИ Агент</span>
+    </a>
+    <a href="#" class="nav-item" data-page="settings" onclick="showPage('settings')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+      <span>Настройки</span>
+      <span class="nav-badge warning" id="nav-key-warn" style="display:none">!</span>
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-version">v1.0 · SQLite</div>
+  </div>
+</aside>
+
+<!-- ===== MOBILE HEADER ===== -->
+<header class="mobile-header">
+  <button class="burger-btn" onclick="toggleSidebar()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+  </button>
+  <div class="mobile-logo">
+    <svg width="20" height="20" viewBox="0 0 28 28" fill="none">
+      <rect width="28" height="28" rx="6" fill="url(#logoGrad2)"/>
+      <path d="M7 10L14 15.5L21 10" stroke="#000" stroke-width="1.8" stroke-linecap="round"/>
+      <path d="M7 10V20H21V10" stroke="#000" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      <defs><linearGradient id="logoGrad2" x1="0" y1="0" x2="28" y2="28"><stop offset="0%" stop-color="#39ff14"/><stop offset="50%" stop-color="#00c853"/><stop offset="100%" stop-color="#00e5ff"/></linearGradient></defs>
+    </svg>
+    <span>GmailAi BD</span>
+  </div>
+  <button class="mobile-agent-btn" onclick="showPage('agent')">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+      <path d="M12 2a8 8 0 0 1 8 8v1h1a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-1a8 8 0 0 1-16 0H3a1 1 0 0 1-1-1v-2a1 1 0 0 1 1-1h1v-1a8 8 0 0 1 8-8z"/>
+      <circle cx="9" cy="11" r="1" fill="currentColor"/><circle cx="15" cy="11" r="1" fill="currentColor"/>
+    </svg>
+  </button>
+</header>
+
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+<!-- ===== MAIN ===== -->
+<main class="main-content">
+
+  <!-- DASHBOARD PAGE -->
+  <div class="page active" id="page-dashboard">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Дашборд</h1>
+        <p class="page-subtitle">Обзор базы аккаунтов</p>
+      </div>
+      <button class="btn btn-primary" onclick="showPage('agent')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a8 8 0 0 1 8 8v1h1a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-1a8 8 0 0 1-16 0H3a1 1 0 0 1-1-1v-2a1 1 0 0 1 1-1h1v-1a8 8 0 0 1 8-8z"/><circle cx="9" cy="11" r="1" fill="currentColor"/><circle cx="15" cy="11" r="1" fill="currentColor"/></svg>
+        Открыть агента
+      </button>
+    </div>
+
+    <div class="stats-grid" id="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon white">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v4c0 1.66 4 3 9 3s9-1.34 9-3V5"/><path d="M3 9v4c0 1.66 4 3 9 3s9-1.34 9-3V9"/><path d="M3 13v4c0 1.66 4 3 9 3s9-1.34 9-3v-4"/></svg>
+        </div>
+        <div class="stat-body">
+          <div class="stat-value" id="stat-total">—</div>
+          <div class="stat-label">Всего</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon green">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="stat-body">
+          <div class="stat-value" id="stat-active">—</div>
+          <div class="stat-label">Активных</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon yellow">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <div class="stat-body">
+          <div class="stat-value" id="stat-appeal">—</div>
+          <div class="stat-label">Аппеляция</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon red">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        </div>
+        <div class="stat-body">
+          <div class="stat-value" id="stat-sold">—</div>
+          <div class="stat-label">Продано</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon cyan">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+        <div class="stat-body">
+          <div class="stat-value" id="stat-recent">—</div>
+          <div class="stat-label">За 7 дней</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon orange">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7" stroke-width="3"/></svg>
+        </div>
+        <div class="stat-body">
+          <div class="stat-value" id="stat-tags">—</div>
+          <div class="stat-label">Тегов</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dash-grid">
+      <div class="card">
+        <div class="card-header">
+          <h3>По статусам</h3>
+        </div>
+        <div class="card-body" id="status-breakdown">
+          <div class="skeleton-rows"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <h3>Последние действия</h3>
+        </div>
+        <div class="card-body" id="recent-activity">
+          <div class="skeleton-rows"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DATABASE PAGE -->
+  <div class="page" id="page-database">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">База данных</h1>
+        <p class="page-subtitle" id="db-subtitle">Загрузка...</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-ghost" onclick="exportCSV()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span class="hide-mobile">CSV</span>
+        </button>
+        <button class="btn btn-danger" id="bulk-delete-btn" style="display:none" onclick="bulkDelete()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+          Удалить (<span id="bulk-count">0</span>)
+        </button>
+        <button class="btn btn-primary" onclick="openAddModal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Добавить
+        </button>
+      </div>
+    </div>
+
+    <div class="filters-bar">
+      <div class="search-wrap">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="search-icon"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="search-input" class="search-input" placeholder="Поиск по email, паролю, заметкам..." oninput="debounceFilter()" />
+      </div>
+      <select class="filter-select" id="status-filter" onchange="applyFilters()">
+        <option value="">Все статусы</option>
+        <option value="active">Активный</option>
+        <option value="sold">Продан</option>
+        <option value="appeal">Аппеляция</option>
+        <option value="banned">Забанен</option>
+        <option value="unknown">Неизвестно</option>
+      </select>
+      <select class="filter-select" id="tag-filter" onchange="applyFilters()">
+        <option value="">Все теги</option>
+      </select>
+      <button class="btn btn-ghost" onclick="clearFilters()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        Сброс
+      </button>
+    </div>
+
+    <div class="table-wrap">
+      <table class="accounts-table" id="accounts-table">
+        <thead>
+          <tr>
+            <th class="col-check">
+              <label class="checkbox-wrap">
+                <input type="checkbox" id="select-all" onchange="toggleSelectAll(this)" />
+                <span class="checkbox-custom"></span>
+              </label>
+            </th>
+            <th class="col-num">#</th>
+            <th>Email</th>
+            <th>Пароль</th>
+            <th>Статус</th>
+            <th class="hide-mobile">2FA</th>
+            <th class="hide-mobile">Рез. почта</th>
+            <th class="hide-mobile">Заметки</th>
+            <th class="hide-mobile">Теги</th>
+            <th class="col-actions"></th>
+          </tr>
+        </thead>
+        <tbody id="accounts-tbody">
+          <tr><td colspan="10" class="loading-row"><div class="spinner"></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination" id="pagination"></div>
+  </div>
+
+  <!-- AGENT PAGE -->
+  <div class="page" id="page-agent">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">ИИ Агент</h1>
+        <p class="page-subtitle">Вставь сырой текст — агент сам разберётся</p>
+      </div>
+      <button class="btn btn-ghost" onclick="clearChat()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+        Очистить
+      </button>
+    </div>
+
+    <div class="chat-container">
+      <div class="chat-messages" id="chat-messages">
+        <div class="chat-welcome">
+          <div class="welcome-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2a8 8 0 0 1 8 8v1h1a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-1a8 8 0 0 1-16 0H3a1 1 0 0 1-1-1v-2a1 1 0 0 1 1-1h1v-1a8 8 0 0 1 8-8z"/><circle cx="9" cy="11" r="1" fill="currentColor"/><circle cx="15" cy="11" r="1" fill="currentColor"/></svg>
+          </div>
+          <h3>Gmail ИИ Агент</h3>
+          <p>Вставь сюда сырой текст с аккаунтами — логи, выгрузки, заметки в любом формате. Агент структурирует данные и занесёт их в базу.</p>
+          <div class="welcome-examples">
+            <div class="example-chip" onclick="fillExample(1)">email:пароль</div>
+            <div class="example-chip" onclick="fillExample(2)">многострочный</div>
+            <div class="example-chip" onclick="fillExample(3)">изменить статус</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-input-area">
+        <div class="chat-input-wrap">
+          <textarea
+            id="chat-input"
+            class="chat-textarea"
+            placeholder="Вставь текст с аккаунтами или задай вопрос агенту..."
+            rows="3"
+            onkeydown="chatKeydown(event)"
+          ></textarea>
+          <button class="chat-send-btn" id="chat-send-btn" onclick="sendChatMessage()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+        <div class="chat-hints">Ctrl+Enter — отправить · Требуется настроенный API-ключ</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS PAGE -->
+  <div class="page" id="page-settings">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Настройки</h1>
+        <p class="page-subtitle">API, модель и системный промпт</p>
+      </div>
+    </div>
+
+    <div class="settings-grid">
+      <div class="card settings-card">
+        <div class="card-header">
+          <h3>Подключение к ИИ</h3>
+        </div>
+        <div class="card-body">
+          <div class="form-group">
+            <label class="form-label">API Endpoint</label>
+            <input type="url" id="s-endpoint" class="form-input" placeholder="https://api.openai.com/v1/chat/completions" />
+            <div class="form-hint">URL API-сервера. Совместим с OpenAI-форматом.</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">API Ключ</label>
+            <div class="input-with-action">
+              <input type="password" id="s-apikey" class="form-input" placeholder="sk-... или fa_sk_..." />
+              <button class="btn-icon" onclick="toggleApiKeyVisibility()" title="Показать/скрыть">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="eye-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Модель</label>
+            <div class="model-input-wrap">
+              <input type="text" id="s-model" class="form-input" placeholder="gpt-4o-mini" />
+              <div class="model-presets">
+                <button class="preset-chip" onclick="setModel('gpt-4o-mini')">gpt-4o-mini</button>
+                <button class="preset-chip" onclick="setModel('gpt-4o')">gpt-4o</button>
+                <button class="preset-chip" onclick="setModel('gemini-3.0-flash-thinking')">gemini-3.0-flash</button>
+                <button class="preset-chip" onclick="setModel('claude-3-5-sonnet')">claude-3-5-sonnet</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card settings-card">
+        <div class="card-header">
+          <h3>Системный промпт</h3>
+          <button class="btn btn-ghost btn-sm" onclick="resetPrompt()">Сбросить</button>
+        </div>
+        <div class="card-body">
+          <textarea id="s-prompt" class="form-textarea" rows="12" placeholder="Системный промпт для агента..."></textarea>
+          <div class="form-hint">Определяет поведение агента. Не меняй формат JSON-ответа.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-actions">
+      <button class="btn btn-primary btn-lg" onclick="saveSettings()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Сохранить
+      </button>
+      <span class="settings-status" id="settings-status"></span>
+    </div>
+  </div>
+
+</main>
+
+<!-- ===== MODAL: ADD/EDIT ACCOUNT ===== -->
+<div class="modal-overlay" id="account-modal" onclick="closeModalOnOverlay(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modal-title">Добавить аккаунт</h3>
+      <button class="modal-close" onclick="closeModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="modal-id" />
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Email *</label>
+          <input type="email" id="modal-email" class="form-input" placeholder="user@gmail.com" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Пароль *</label>
+          <input type="text" id="modal-password" class="form-input" placeholder="Password123" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Статус</label>
+          <select id="modal-status" class="form-input">
+            <option value="active">Активный</option>
+            <option value="sold">Продан</option>
+            <option value="appeal">Аппеляция</option>
+            <option value="banned">Забанен</option>
+            <option value="unknown">Неизвестно</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">2FA код</label>
+          <input type="text" id="modal-2fa" class="form-input" placeholder="TOTP ключ или код" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Резервная почта</label>
+          <input type="email" id="modal-rec-email" class="form-input" placeholder="backup@mail.com" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Резервный телефон</label>
+          <input type="text" id="modal-rec-phone" class="form-input" placeholder="+7..." />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Заметки</label>
+        <textarea id="modal-notes" class="form-input" rows="2" placeholder="Любые заметки..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Теги (через запятую)</label>
+        <input type="text" id="modal-tags" class="form-input" placeholder="batch1, premium, usa" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Отмена</button>
+      <button class="btn btn-primary" onclick="saveAccount()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TOAST ===== -->
+<div class="toast-container" id="toast-container"></div>
+
+<!-- ===== 3D WAVE GRID ANIMATION ===== -->
+<script>
+(function() {
+  const canvas = document.getElementById('grid-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, t = 0, raf;
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  const COLS = 28;
+  const ROWS = 18;
+  const AMP  = 18;
+  const FREQ = 0.28;
+  const SPD  = 0.018;
+
+  function getPoint(c, r) {
+    const x = (c / COLS) * W;
+    const wave = Math.sin(c * FREQ + r * 0.22 + t) * AMP
+               + Math.sin(c * 0.15 + r * FREQ * 0.8 + t * 0.7) * (AMP * 0.4);
+    const y = (r / ROWS) * H + wave;
+    return { x, y };
+  }
+
+  function colorH(c, r) {
+    const progress = c / COLS;
+    // lime → green → cyan  (hue 100 → 150 → 185)
+    const hue = 100 + progress * 85;
+    const sat = 100;
+    const lit = 45 + progress * 10;
+    const alpha = 0.055 + 0.035 * Math.abs(Math.sin(r * 0.4 + t * 0.5));
+    return `hsla(${hue},${sat}%,${lit}%,${alpha})`;
+  }
+  function colorV(c, r) {
+    const progress = r / ROWS;
+    const hue = 120 + progress * 65;
+    const alpha = 0.04 + 0.025 * Math.abs(Math.sin(c * 0.35 + t * 0.6));
+    return `hsla(${hue},100%,50%,${alpha})`;
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    // Horizontal lines
+    for (let r = 0; r <= ROWS; r++) {
+      ctx.beginPath();
+      for (let c = 0; c <= COLS; c++) {
+        const p = getPoint(c, r);
+        c === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y);
+      }
+      ctx.strokeStyle = colorH(Math.floor(COLS / 2), r);
+      ctx.lineWidth = 0.6;
+      ctx.stroke();
+    }
+
+    // Vertical lines
+    for (let c = 0; c <= COLS; c++) {
+      ctx.beginPath();
+      for (let r = 0; r <= ROWS; r++) {
+        const p = getPoint(c, r);
+        r === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y);
+      }
+      ctx.strokeStyle = colorV(c, Math.floor(ROWS / 2));
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
+    }
+
+    // Glowing intersection dots at key points
+    for (let c = 0; c <= COLS; c += 4) {
+      for (let r = 0; r <= ROWS; r += 3) {
+        const p = getPoint(c, r);
+        const progress = c / COLS;
+        const hue = 100 + progress * 85;
+        const glow = 0.15 + 0.1 * Math.sin(c * 0.5 + r * 0.4 + t * 1.2);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 1.2, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${hue},100%,60%,${glow})`;
+        ctx.fill();
+      }
+    }
+
+    t += SPD;
+    raf = requestAnimationFrame(draw);
+  }
+
+  draw();
+})();
+</script>
+
+<script src="/static/app.js"></script>
+<script src="/static/chat.js"></script>
+</body>
+</html>
